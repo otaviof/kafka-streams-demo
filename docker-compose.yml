@@ -1,0 +1,68 @@
+version: "2"
+
+services:
+  zookeeper:
+    image: cihatgenc/confluent-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      zk_id: "1"
+
+  kafka:
+    image: cihatgenc/confluent-kafka
+    depends_on:
+      - "zookeeper"
+    ports:
+      - "9092:9092"
+    links:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "0.0.0.0"
+      KAFKA_ADVERTISED_PORT: "9092"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+
+  rest-proxy:
+    image: cihatgenc/confluent-rest-proxy
+    depends_on:
+      - "zookeeper"
+      - "kafka"
+      - "schema-registry"
+    ports:
+      - "8082:8082"
+    links:
+      - zookeeper
+      - kafka
+      - schema-registry
+    environment:
+      RP_SCHEMA_REGISTRY_URL: "http://schema-registry:18081"
+      RP_ZOOKEEPER_CONNECT: "zookeeper:2181"
+
+  schema-registry:
+    image: cihatgenc/confluent-schema-registry
+    depends_on:
+      - "kafka"
+      - "zookeeper"
+    ports:
+      - "18081:18081"
+    links:
+      - kafka
+      - zookeeper
+    environment:
+      SR_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
+      SR_SECURITY_PROTOCOL: "PLAINTEXT"
+      SR_KAFKASTORE_TOPIC: "_schemas"
+      SR_PORT: "18081"
+      SR_LISTENERS: "http://schema-registry:18081"
+      SR_DEBUG: "true"
+      KAFKA_BROKER: "kafka"
+      KAFKA_PORT: "9092"
+
+# control-center:
+#   image: ftrossbach/confluent-control-center
+#   depends_on:
+#     - kafka
+#     - zookeeper
+#     - rest-proxy
+#     - schema-registry
+#   ports:
+#     - 9021:9021
