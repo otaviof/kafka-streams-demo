@@ -6,7 +6,7 @@ for t in StreamsFileInput TextLinesTopic WordsWithCountsTopic ; do
     kafka-topics \
         --create \
         --topic $t \
-        --zookeeper $ZOOKEEPER_URI \
+        --zookeeper 127.0.0.1:2181 \
         --partitions 1 \
         --replication-factor 1
 

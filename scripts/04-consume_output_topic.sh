@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 kafka-console-consumer \
-    --zookeeper $ZOOKEEPER_URI \
+    --zookeeper 127.0.0.1:2181 \
     --topic WordsWithCountsTopic \
     --from-beginning \
     --formatter kafka.tools.DefaultMessageFormatter \
